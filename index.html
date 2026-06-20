@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Airdrop History</title>
+</head>
+<body>
+
+<h1>🎁 My Airdrop History</h1>
+
+<table border="1" id="airdropTable">
+    <thead>
+        <tr>
+            <th>Tanggal</th>
+            <th>Project</th>
+            <th>Reward</th>
+            <th>Estimasi ($)</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h3 id="total"></h3>
+
+<script>
+fetch('airdrops.csv')
+.then(response => response.text())
+.then(data => {
+
+    const rows = data.trim().split('\n').slice(1);
+
+    let total = 0;
+    const tbody = document.querySelector('#airdropTable tbody');
+
+    rows.forEach(row => {
+
+        const cols = row.split(',');
+
+        const tr = document.createElement('tr');
+
+        cols.forEach(col => {
+            const td = document.createElement('td');
+            td.textContent = col;
+            tr.appendChild(td);
+        });
+
+        total += Number(cols[3]);
+
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('total').innerText =
+        '💰 Total Airdrop: $' + total;
+});
+</script>
+
+</body>
+</html>
