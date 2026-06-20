@@ -1,105 +1,94 @@
 <!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Airdrop History</title><style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎁 My Airdrop History</title><style>
 
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5f7fb;
-        color: #333;
-    }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-    .container {
-        max-width: 1100px;
-        margin: auto;
-        padding: 30px 20px;
-    }
+body{
+    font-family:Arial,sans-serif;
+    background:#f5f7fb;
+    color:#333;
+}
 
-    h1 {
-        text-align: center;
-        margin-bottom: 25px;
-    }
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:30px 20px;
+}
 
-    .stats {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-bottom: 30px;
-    }
+h1{
+    text-align:center;
+    margin-bottom:30px;
+}
 
-    .card {
-        background: white;
-        width: 220px;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(0,0,0,.08);
-    }
+.stats{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:30px;
+}
 
-    .card h2 {
-        margin-bottom: 8px;
-        font-size: 28px;
-    }
+.card{
+    background:white;
+    width:220px;
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
 
-    .table-wrapper {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,.08);
-    }
+.card h2{
+    margin-bottom:8px;
+    font-size:28px;
+}
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+.table-wrapper{
+    background:white;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
 
-    thead {
-        background: #222;
-        color: white;
-    }
+table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-    th,
-    td {
-        padding: 12px;
-        text-align: center;
-        border-bottom: 1px solid #eee;
-    }
+thead{
+    background:#222;
+    color:white;
+}
 
-    tbody tr:hover {
-        background: #f9f9f9;
-    }
+th,td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
 
-    .footer {
-        text-align: center;
-        margin-top: 20px;
-        color: #666;
-        font-size: 14px;
-    }
+tbody tr:hover{
+    background:#f9f9f9;
+}
 
-    @media (max-width: 768px) {
-        .card {
-            width: 100%;
-        }
+.footer{
+    text-align:center;
+    margin-top:20px;
+    color:#777;
+    font-size:14px;
+}
 
-        table {
-            font-size: 14px;
-        }
+.loading{
+    text-align:center;
+    padding:30px;
+}
 
-        th,
-        td {
-            padding: 8px;
-        }
-    }
-</style>
-
-</head><body><div class="container"><h1>🎁 My Airdrop History</h1>
+</style></head><body><div class="container"><h1>🎁 My Airdrop History</h1>
 
 <div class="stats">
 
@@ -116,72 +105,83 @@
 </div>
 
 <div class="table-wrapper">
+
     <table id="airdropTable">
-        <thead></thead>
-        <tbody></tbody>
+
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Project</th>
+                <th>Reward</th>
+                <th>Estimasi ($)</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="4" class="loading">
+                    Loading...
+                </td>
+            </tr>
+        </tbody>
+
     </table>
+
 </div>
 
 <div class="footer">
-    Updated automatically from airdrops.csv
+    Data source: Google Sheets
 </div>
 
 </div><script>
 
-fetch('https://docs.google.com/spreadsheets/d/1fNCPN1FcOcHQHWm7Dkua-s7H5M7s0k2wphP7tnrA8Sc/export?format=csv')
-.then(response => response.text())
+const API_URL =
+'https://opensheet.elk.sh/1fNCPN1FcOcHQHWm7Dkua-s7H5M7s0k2wphP7tnrA8Sc/airdrop';
+
+fetch(API_URL)
+.then(response => response.json())
 .then(data => {
 
-    const lines = data.trim().split('\n');
+    const tbody = document.getElementById('tableBody');
 
-    const headers = lines[0].split(',');
-
-    const thead = document.querySelector('#airdropTable thead');
-    const tbody = document.querySelector('#airdropTable tbody');
-
-    let headerRow = '<tr>';
-
-    headers.forEach(header => {
-        headerRow += `<th>${header}</th>`;
-    });
-
-    headerRow += '</tr>';
-
-    thead.innerHTML = headerRow;
+    tbody.innerHTML = '';
 
     let totalReward = 0;
-    let totalProject = 0;
 
-    lines.slice(1).forEach(line => {
+    data.forEach(item => {
 
-        if (!line.trim()) return;
+        const estimasi = Number(item.Estimasi) || 0;
 
-        const cols = line.split(',');
+        totalReward += estimasi;
 
-        let row = '<tr>';
-
-        cols.forEach(col => {
-            row += `<td>${col}</td>`;
-        });
-
-        row += '</tr>';
-
-        tbody.innerHTML += row;
-
-        const estimate = Number(cols[3]);
-
-        if (!isNaN(estimate)) {
-            totalReward += estimate;
-        }
-
-        totalProject++;
+        tbody.innerHTML += `
+        <tr>
+            <td>${item.Tanggal}</td>
+            <td>${item.Project}</td>
+            <td>${item.Reward}</td>
+            <td>$${estimasi}</td>
+        </tr>
+        `;
     });
 
-    document.getElementById('totalReward').innerText =
-        '$' + totalReward.toLocaleString();
+    document.getElementById('totalReward')
+        .innerText = '$' + totalReward.toLocaleString();
 
-    document.getElementById('totalProject').innerText =
-        totalProject;
+    document.getElementById('totalProject')
+        .innerText = data.length;
+
+})
+.catch(error => {
+
+    document.getElementById('tableBody').innerHTML = `
+    <tr>
+        <td colspan="4">
+            Failed to load data
+        </td>
+    </tr>
+    `;
+
+    console.error(error);
 
 });
 
